@@ -1,0 +1,32 @@
+{
+  "name": "2048-ai",
+  "version": "0.0.1",
+  "description": "AI for the game 2048",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/juncaixinchi/2048-AI.git"
+  },
+  "keywords": [
+    "AI",
+    "2048"
+  ],
+  "author": "juncaixinchi",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/juncaixinchi/2048-AI/issues"
+  },
+  "homepage": "https://github.com/juncaixinchi/2048-AI#readme",
+  "dependencies": {
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-scripts": "1.1.0",
+    "uuid": "^3.2.1"
+  }
+}
