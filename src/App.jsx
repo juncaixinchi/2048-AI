@@ -1,7 +1,13 @@
 import React from 'react'
 import UUID from 'uuid'
 
-const colors = ['#A1887F', '#B2EBF2', '#80DEEA', '#4DD0E1', '#26C6DA', '#00BCD4', '#00ACC1', '#0097A7', '#00838F', '#006064' ] 
+const colors = [
+  '#A1887F', '#F44336', '#E91E63', '#9C27B0',
+  '#673AB7', '#3F51B5', '#2196F3', '#03A9F4',
+  '#00BCD4', '#009688', '#4CAF50', '#8BC34A',
+  '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800',
+  '#FF5722', '#000000',
+  ] 
 
 const getKey = () => UUID.v4()
 
@@ -22,7 +28,7 @@ class App extends React.Component {
         newG.pos = poses[Math.floor(Math.random() * poses.length)]
         this.setState({ list, loading: true }, () => {
           list.push(newG)
-          setTimeout(() => this.setState({ list: list.filter(l => l.level > -1).sort((a, b) => a.key - b.key), loading: false }), 450)
+          setTimeout(() => this.setState({ list: list.filter(l => l.level > -1), loading: false }), 225)
         })
       }
     }
@@ -45,9 +51,9 @@ class App extends React.Component {
             break
           }
         }
-        list[i] = { level, pos, key }
+        Object.assign(list[i], { level, pos, key })
       }
-      this.update(list)
+      this.update([...this.state.list])
     }
 
     this.down = () => {
@@ -68,9 +74,9 @@ class App extends React.Component {
             break
           }
         }
-        list[i] = { level, pos, key }
+        Object.assign(list[i], { level, pos, key })
       }
-      this.update(list)
+      this.update([...this.state.list])
     }
 
     this.left = () => {
@@ -91,9 +97,9 @@ class App extends React.Component {
             break
           }
         }
-        list[i] = { level, pos, key }
+        Object.assign(list[i], { level, pos, key })
       }
-      this.update(list)
+      this.update([...this.state.list])
     }
 
     this.right = () => {
@@ -114,9 +120,9 @@ class App extends React.Component {
             break
           }
         }
-        list[i] = { level, pos, key }
+        Object.assign(list[i], { level, pos, key })
       }
-      this.update(list)
+      this.update([...this.state.list])
     }
 
     /* cathc key action */
@@ -148,7 +154,7 @@ class App extends React.Component {
     /* bind keydown event */
     document.addEventListener('keydown', this.keyDown)
     document.addEventListener('keyup', this.keyUp)
-    // this.update([{ pos: 0, level: 0, key: getKey() }])
+    // this.update(Array.from({ length: 15}).map((v, i) => ({ level: 15 - i, pos: i, key: getKey() })))
     this.update([])
   }
 
@@ -160,24 +166,29 @@ class App extends React.Component {
 
   renderGrid({ pos, level, key }) {
     const color = colors[level + 1]
-    const top = 8 + Math.floor(pos / 4) * 144
-    const left = 8 + (pos % 4) * 144
+    const top = 16 + Math.floor(pos / 4) * 144
+    const left = 16 + (pos % 4) * 144
     const text = level > -1 ? Math.pow(2, level) : ''
     return (
       <div
         key={key.toString()}
         style={{
           position: 'absolute',
-          marginTop: top || 0,
-          marginLeft: left || 0,
+          top: top || 0,
+          left: left || 0,
           width: 128,
           height: 128,
+          color: '#FFF',
+          fontSize: 40,
+          filter: 'brightness(0.8)',
+          fontWeight: 500,
           backgroundColor: color,
+          borderRadius: 16,
           zIndex: level + 100,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          transition: 'all 450ms'
+          transition: 'all 225ms'
         }}
       >
         { text }
