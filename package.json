@@ -4,6 +4,8 @@
   "description": "AI for the game 2048",
   "main": "index.js",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
@@ -22,8 +24,9 @@
   "bugs": {
     "url": "https://github.com/juncaixinchi/2048-AI/issues"
   },
-  "homepage": "https://github.com/juncaixinchi/2048-AI#readme",
+  "homepage": "https://juncaixinchi.github.io/2048-AI",
   "dependencies": {
+    "gh-pages": "^1.1.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-scripts": "1.1.0",
