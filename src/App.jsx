@@ -2,7 +2,7 @@ import React from 'react'
 import UUID from 'uuid'
 
 const colors = [
-  '#A1887F', '#F44336', '#E91E63', '#9C27B0',
+  '#CDC1B4', '#F44336', '#E91E63', '#9C27B0',
   '#673AB7', '#3F51B5', '#2196F3', '#03A9F4',
   '#00BCD4', '#009688', '#4CAF50', '#8BC34A',
   '#CDDC39', '#FFEB3B', '#FFC107', '#FF9800',
@@ -20,6 +20,8 @@ class App extends React.Component {
       loading: false
     }
 
+    this.score = 0
+
     this.update = (list) => {
       const poses = Array.from({ length: 16 }).map((v, i) => i).filter(v => list.findIndex(l => l.pos === v) === -1)
       console.log(poses)
@@ -33,89 +35,22 @@ class App extends React.Component {
       }
     }
 
-    this.up = () => {
-      const list = [...this.state.list].filter(a => a.level > -1).sort((a, b) => a.pos - b.pos)
+    this.change = (args) => {
+      const { sortFunc, shouldMove, posChange } = args
+      const list = [...this.state.list].filter(a => a.level > -1).sort(sortFunc)
       for (let i = 0; i < list.length; i++) {
         let { level, pos, key } = list[i]
         console.log('map', level, pos)
-        while (pos / 4 >= 1) { // should move or not
-          const index = list.findIndex(x => x.pos === pos - 4)
+        while (shouldMove(pos)) { // should move or not
+          const index = list.findIndex(x => x.pos === pos + posChange)
           if (index === -1) { // no item in right
-            pos -= 4
+            pos += posChange
           } else {
             if (list[index].level === level) { // merge
+              this.score += Math.pow(2, level + 2)
               list[index].level += 1
               level = -100
-              pos -= 4
-            }
-            break
-          }
-        }
-        Object.assign(list[i], { level, pos, key })
-      }
-      this.update([...this.state.list])
-    }
-
-    this.down = () => {
-      const list = [...this.state.list].filter(a => a.level > -1).sort((a, b) => b.pos - a.pos)
-      for (let i = 0; i < list.length; i++) {
-        let { level, pos, key } = list[i]
-        console.log('map', level, pos)
-        while (pos / 4 < 3) { // should move or not
-          const index = list.findIndex(x => x.pos === pos + 4)
-          if (index === -1) { // no item in right
-            pos += 4
-          } else {
-            if (list[index].level === level) { // merge
-              list[index].level += 1
-              level = -100
-              pos += 4
-            }
-            break
-          }
-        }
-        Object.assign(list[i], { level, pos, key })
-      }
-      this.update([...this.state.list])
-    }
-
-    this.left = () => {
-      const list = [...this.state.list].filter(a => a.level > -1).sort((a, b) => (a.pos % 4) - (b.pos % 4))
-      for (let i = 0; i < list.length; i++) {
-        let { level, pos, key } = list[i]
-        console.log('map', level, pos)
-        while (pos % 4 > 0) { // should move or not
-          const index = list.findIndex(x => x.pos === pos - 1)
-          if (index === -1) { // no item in right
-            pos -= 1
-          } else {
-            if (list[index].level === level) { // merge
-              list[index].level += 1
-              level = -100
-              pos -= 1
-            }
-            break
-          }
-        }
-        Object.assign(list[i], { level, pos, key })
-      }
-      this.update([...this.state.list])
-    }
-
-    this.right = () => {
-      const list = [...this.state.list].sort((a, b) => (b.pos % 4) - (a.pos % 4))
-      for (let i = 0; i < list.length; i++) {
-        let { level, pos, key } = list[i]
-        console.log('map', level, pos)
-        while (pos % 4 < 3) { // should move or not
-          const index = list.findIndex(x => x.pos === pos + 1)
-          if (index === -1) { // no item in right
-            pos += 1
-          } else {
-            if (list[index].level === level) { // merge
-              list[index].level += 1
-              level = -100
-              pos += 1
+              pos += posChange
             }
             break
           }
@@ -129,25 +64,48 @@ class App extends React.Component {
     this.keyDown = (e) => {
       if (this.state.loading) return
       console.log(e.key)
+      let args = null
       switch (e.key) {
         case 'ArrowUp':
-          this.up()
+          args = {
+            sortFunc: (a, b) => a.pos - b.pos,
+            shouldMove: p => (p / 4 >= 1),
+            posChange: -4
+          }
           break
         case 'ArrowDown':
-          this.down()
+          args = {
+            sortFunc: (a, b) => b.pos - a.pos,
+            shouldMove: p => (p / 4 < 3),
+            posChange: 4
+          }
           break
         case 'ArrowLeft':
-          this.left()
+          args = {
+            sortFunc: (a, b) => (a.pos % 4) - (b.pos % 4),
+            shouldMove: p => (p % 4 > 0),
+            posChange: -1
+          }
           break
         case 'ArrowRight':
-          this.right()
+          args = {
+            sortFunc: (a, b) => (b.pos % 4) - (a.pos % 4),
+            shouldMove: p => (p % 4 < 3),
+            posChange: 1
+          }
           break
         default:
           break
       }
+      if (args) this.change(args)
     }
 
     this.keyUp = e => null
+
+    this.getSize = () => {
+      const w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth
+      return Math.min(Math.max(40, w / 4 - 32), 100)
+    }
   }
 
   componentDidMount() {
@@ -165,10 +123,11 @@ class App extends React.Component {
   }
 
   renderGrid({ pos, level, key }) {
+    const size = this.getSize()
     const color = colors[level + 1]
-    const top = 16 + Math.floor(pos / 4) * 144
-    const left = 16 + (pos % 4) * 144
-    const text = level > -1 ? Math.pow(2, level) : ''
+    const top = 16 + Math.floor(pos / 4) * (size + 16)
+    const left = 16 + (pos % 4) * (size + 16)
+    const text = level > -1 ? Math.pow(2, level + 1) : ''
     return (
       <div
         key={key.toString()}
@@ -176,11 +135,10 @@ class App extends React.Component {
           position: 'absolute',
           top: top || 0,
           left: left || 0,
-          width: 128,
-          height: 128,
+          width: size,
+          height: size,
           color: '#FFF',
-          fontSize: 40,
-          filter: 'brightness(0.8)',
+          fontSize: 36,
           fontWeight: 500,
           backgroundColor: color,
           borderRadius: 16,
@@ -198,23 +156,34 @@ class App extends React.Component {
 
   render() {
     console.log('state', this.state.list)
+    const size = this.getSize()
     return (
       <div
         style={{
           width: '100%',
           height: '100%',
-          backgroundColor: '#000000',
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          backgroundColor: '#faf8ef',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center'
+          overflow: 'auto'
         }}
       >
-        <div style={{ width: 624, height: '100%', margin: 24 }}>
-          <div style={{ fontSize: 34, fontWeight: 500, color: '#FFF', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <div style={{ margin: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ fontSize: 34, fontWeight: 700, width: 200, color: '#BDBDBD', display: 'flex', alignItems: 'center' }}>
               2048 AI
             </div>
-          <div style={{ height: 48 }} />
-          <div style={{ width: 576, height: 576, backgroundColor: '#795548', padding: 8, position: 'relative' }} key="container">
+            <div style={{ flexGrow: 1 }} />
+            <div style={{ width: 80, backgroundColor: 'grey', borderRadius: 8, color: '#FFF' }}>
+              <div style={{ fontSize: 16, textAlign: 'center', margin: 8 }}> SCORE </div>
+              <div style={{ fontSize: 24, fontWeight: 700, textAlign: 'center', marginTop: -4, marginBottom: 4 }}> { this.score } </div>
+            </div>
+          </div>
+          <div style={{ height: 36 }} />
+          <div style={{ width: 4 * size + 64, height: 4 * size + 64, backgroundColor: '#BBADA0', padding: 8, position: 'relative', borderRadius: 12 }} key="container">
             { Array.from({ length: 16 }).map((v, i) => this.renderGrid({ level: -1, pos: i, key: getKey() })) }
             { this.state.list.map(l => this.renderGrid(l)) }
           </div>
